@@ -15,12 +15,18 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 집계는 Supabase RPC(theme_counts)가 DB 안에서 group by로 끝낸다.
+    // 따라서 개별 행 조회 건수 제한(PostgREST 기본 1000행)에 걸리지 않고,
+    // 투표가 아무리 많아도 테마 수만큼의 집계 행만 돌아온다 = 누락 없음.
     const r = await fetch(`${url}/rest/v1/rpc/theme_counts`, {
       method: 'POST',
       headers: {
         apikey: secretKey,
         Authorization: `Bearer ${secretKey}`,
         'Content-Type': 'application/json',
+        // 혹시 모를 응답 상한에 대비해 넉넉히 허용 (집계 행은 소수라 사실상 영향 없음)
+        'Accept-Profile': 'public',
+        Range: '0-9999',
       },
       body: '{}',
     });
