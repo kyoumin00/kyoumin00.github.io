@@ -1,0 +1,22 @@
+# Vercel 공개 배포에서 제외할 항목
+# (공개 사이트에는 HTML/CSS/브라우저 JS/이미지만 포함)
+
+# 버전 관리
+.git
+
+# Kiro 설정·개인 기록
+.kiro
+docs
+
+# 환경변수·비밀
+.env
+.env.*
+*.pem
+*.key
+
+# 의존성
+node_modules
+
+# OS/에디터 부산물
+.DS_Store
+Thumbs.db

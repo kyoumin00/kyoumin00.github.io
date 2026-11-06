@@ -70,6 +70,19 @@
   .again { margin-top: 6px; background: none; border: 0; color: var(--accent); cursor: pointer; font-size: 15px; font-family: inherit; padding: 6px 0; }
   .empty { color: var(--muted); text-align: center; padding: 12px 0; }
   footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+
+  /* 다음 추천 테마 투표 */
+  .vote-note { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .vote-msg { margin-top: 12px; font-size: 14px; min-height: 20px; }
+  .vote-msg.ok { color: var(--accent); }
+  .vote-msg.err { color: #d14343; }
+  .board { margin-top: 16px; display: grid; gap: 8px; }
+  .board-row { display: grid; grid-template-columns: 96px 1fr 44px; align-items: center; gap: 10px; font-size: 14px; }
+  .board-row .label { color: var(--fg); }
+  .board-row .bar-wrap { background: var(--bg); border: 1px solid var(--line); border-radius: 99px; height: 12px; overflow: hidden; }
+  .board-row .bar { height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width .3s; }
+  .board-row .cnt { text-align: right; color: var(--muted); }
+  .board-empty { color: var(--muted); font-size: 14px; }
 </style>
 </head>
 <body>
@@ -96,6 +109,17 @@
   <button class="go" id="go" type="button">노래 추천받기</button>
 
   <div id="result"></div>
+
+  <div class="panel" style="margin-top:24px">
+    <h2>다음엔 어떤 테마 노래를 더 추천받고 싶어요?</h2>
+    <p class="vote-note">마음에 드는 테마 하나를 골라 한 표 남겨 주세요. 다른 사람들의 선택도 함께 보여요.</p>
+    <div class="chips" id="themes"></div>
+    <div class="row">
+      <button class="go" id="vote" type="button" style="margin-top:8px" disabled>이 테마에 한 표</button>
+    </div>
+    <div class="vote-msg" id="voteMsg"></div>
+    <div class="board" id="board"></div>
+  </div>
 
   <footer>노래 제목을 누르면 유튜브 검색 결과가 새 탭에서 열려요.</footer>
 </div>
@@ -281,6 +305,129 @@
       btn.disabled = false;
     }, { timeout: 8000 });
   });
+})();
+</script>
+
+<!-- 다음 추천 테마 투표 (브라우저 → Vercel 서버 함수 → Supabase) -->
+<script>
+(() => {
+  // 저장 가능한 테마 (서버 함수의 화이트리스트와 반드시 일치)
+  const THEMES = [
+    ['드라이브', '🚗'], ['공부·집중', '📚'], ['운동', '💪'],
+    ['밤 산책', '🌙'], ['카페', '☕'], ['잠들기 전', '🛌']
+  ];
+
+  const $ = id => document.getElementById(id);
+  const msg = $('voteMsg');
+  const voteBtn = $('vote');
+  const board = $('board');
+  let picked = null;
+  let busy = false;
+
+  // 브라우저는 Supabase 키를 모른다. 서버 함수(/api/*)만 호출한다.
+
+  function setMsg(text, kind) {
+    msg.textContent = text || '';
+    msg.className = 'vote-msg' + (kind ? ' ' + kind : '');
+  }
+
+  function makeThemeChips() {
+    const boxEl = $('themes');
+    THEMES.forEach(([name, emoji]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.dataset.name = name;
+      b.textContent = emoji + ' ' + name;
+      b.addEventListener('click', () => {
+        picked = (picked === name) ? null : name;
+        document.querySelectorAll('#themes .chip').forEach(c => {
+          c.classList.toggle('on', c.dataset.name === picked);
+        });
+        voteBtn.disabled = !picked || busy;
+      });
+      boxEl.appendChild(b);
+    });
+  }
+
+  function renderBoard(rows) {
+    board.textContent = '';
+    const counts = {};
+    THEMES.forEach(([name]) => { counts[name] = 0; });
+    (rows || []).forEach(r => { if (r.theme in counts) counts[r.theme] = Number(r.count) || 0; });
+
+    const max = Math.max(1, ...Object.values(counts));
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    if (total === 0) {
+      const p = document.createElement('p');
+      p.className = 'board-empty';
+      p.textContent = '아직 투표가 없어요. 첫 번째로 골라 보세요!';
+      board.appendChild(p);
+      return;
+    }
+
+    THEMES.forEach(([name]) => {
+      const c = counts[name];
+      const row = document.createElement('div');
+      row.className = 'board-row';
+
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = name;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = Math.round((c / max) * 100) + '%';
+      wrap.appendChild(bar);
+
+      const cnt = document.createElement('span');
+      cnt.className = 'cnt';
+      cnt.textContent = c;
+
+      row.append(label, wrap, cnt);
+      board.appendChild(row);
+    });
+  }
+
+  async function loadBoard() {
+    try {
+      const res = await fetch('/api/counts');
+      if (!res.ok) throw new Error('http ' + res.status);
+      const data = await res.json();
+      renderBoard(data);
+    } catch (e) {
+      board.innerHTML = '<p class="board-empty">반응 횟수를 불러오지 못했어요.</p>';
+    }
+  }
+
+  async function vote() {
+    if (!picked || busy) return;
+    busy = true;
+    voteBtn.disabled = true;
+    setMsg('저장 중…');
+    try {
+      const res = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: picked })
+      });
+      if (!res.ok) throw new Error('http ' + res.status);
+      setMsg('고마워요! “' + picked + '”에 투표했어요.', 'ok');
+      await loadBoard();
+    } catch (e) {
+      setMsg('지금은 투표를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'err');
+    } finally {
+      busy = false;
+      voteBtn.disabled = !picked;
+    }
+  }
+
+  makeThemeChips();
+  voteBtn.addEventListener('click', vote);
+  loadBoard();
 })();
 </script>
 </body>
