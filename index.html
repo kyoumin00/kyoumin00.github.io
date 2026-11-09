@@ -106,6 +106,11 @@
     </div>
   </div>
 
+  <div class="panel">
+    <h2>3. 어떤 상황이에요? <span style="color:var(--muted);font-weight:400;font-size:13px">(선택)</span></h2>
+    <div class="chips" id="situations"></div>
+  </div>
+
   <button class="go" id="go" type="button">노래 추천받기</button>
 
   <div id="result"></div>
@@ -133,54 +138,99 @@
   const WEATHERS = [
     ['맑음', '☀️'], ['흐림', '☁️'], ['비', '🌧️'], ['눈', '❄️']
   ];
-
-  // t: 제목, a: 아티스트, m: 어울리는 기분, w: 어울리는 날씨
-  const SONGS = [
-    { t: '좋은 날', a: '아이유', m: ['행복', '신남'], w: ['맑음'] },
-    { t: '벚꽃 엔딩', a: '버스커 버스커', m: ['설렘', '행복'], w: ['맑음'] },
-    { t: '봄봄봄', a: '로이킴', m: ['설렘', '행복'], w: ['맑음'] },
-    { t: 'Dynamite', a: 'BTS', m: ['신남', '행복'], w: ['맑음'] },
-    { t: 'Happy', a: 'Pharrell Williams', m: ['행복', '신남'], w: ['맑음'] },
-    { t: 'Here Comes the Sun', a: 'The Beatles', m: ['행복', '평온'], w: ['맑음'] },
-    { t: "I'm Yours", a: 'Jason Mraz', m: ['행복', '평온'], w: ['맑음'] },
-    { t: 'What a Wonderful World', a: 'Louis Armstrong', m: ['평온', '행복'], w: ['맑음'] },
-    { t: '여행', a: '볼빨간사춘기', m: ['행복', '평온'], w: ['맑음'] },
-    { t: 'Hype Boy', a: 'NewJeans', m: ['설렘', '신남'], w: ['맑음'] },
-    { t: '사랑은 은하수 다방에서', a: '10cm', m: ['설렘'], w: ['맑음', '흐림'] },
-    { t: 'EVERYTHING', a: '검정치마', m: ['설렘'], w: ['맑음', '흐림'] },
-    { t: '두 사람', a: '성시경', m: ['설렘', '평온'], w: ['흐림'] },
-    { t: 'Perfect', a: 'Ed Sheeran', m: ['설렘', '평온'], w: ['눈', '흐림'] },
-    { t: 'Gee', a: '소녀시대', m: ['신남'], w: ['맑음'] },
-    { t: '챔피언', a: '싸이', m: ['신남'], w: ['맑음'] },
-    { t: 'Uptown Funk', a: 'Mark Ronson ft. Bruno Mars', m: ['신남'], w: ['맑음'] },
-    { t: "Don't Stop Me Now", a: 'Queen', m: ['신남'], w: ['맑음', '흐림'] },
-    { t: 'Shake It Off', a: 'Taylor Swift', m: ['신남', '행복'], w: ['맑음', '흐림'] },
-    { t: '밤편지', a: '아이유', m: ['평온', '설렘'], w: ['흐림'] },
-    { t: '가을 아침', a: '아이유', m: ['평온'], w: ['흐림'] },
-    { t: '사계', a: '태연', m: ['평온', '설렘'], w: ['눈', '흐림'] },
-    { t: 'Clair de Lune', a: 'Claude Debussy', m: ['평온'], w: ['흐림', '눈'] },
-    { t: "Don't Know Why", a: 'Norah Jones', m: ['평온', '슬픔'], w: ['비', '흐림'] },
-    { t: '비처럼 음악처럼', a: '김현식', m: ['평온', '슬픔'], w: ['비'] },
-    { t: '붉은 노을', a: '이문세', m: ['평온', '지침'], w: ['흐림', '맑음'] },
-    { t: '오랜 날 오랜 밤', a: '악동뮤지션', m: ['슬픔', '평온'], w: ['흐림'] },
-    { t: '비', a: '폴킴', m: ['슬픔'], w: ['비'] },
-    { t: '우산', a: '에픽하이 (feat. 윤하)', m: ['슬픔'], w: ['비'] },
-    { t: 'Someone Like You', a: 'Adele', m: ['슬픔'], w: ['비', '흐림'] },
-    { t: 'All I Want', a: 'Kodaline', m: ['슬픔'], w: ['비'] },
-    { t: "when the party's over", a: 'Billie Eilish', m: ['슬픔', '지침'], w: ['흐림'] },
-    { t: '눈의 꽃', a: '박효신', m: ['슬픔', '설렘'], w: ['눈'] },
-    { t: '봄날', a: '방탄소년단', m: ['슬픔'], w: ['눈'] },
-    { t: '주저하는 연인들을 위해', a: '잔나비', m: ['설렘', '슬픔'], w: ['흐림'] },
-    { t: 'Fix You', a: 'Coldplay', m: ['지침', '슬픔'], w: ['흐림', '비'] },
-    { t: 'Lean on Me', a: 'Bill Withers', m: ['지침'], w: ['맑음', '흐림'] },
-    { t: '걱정 말아요 그대', a: '이적', m: ['지침'], w: ['흐림', '눈'] },
-    { t: 'Have You Ever Seen the Rain?', a: 'Creedence Clearwater Revival', m: ['지침'], w: ['비'] },
-    { t: "Don't Look Back in Anger", a: 'Oasis', m: ['지침'], w: ['흐림'] },
-    { t: 'Let It Snow! Let It Snow! Let It Snow!', a: 'Dean Martin', m: ['행복', '설렘'], w: ['눈'] },
-    { t: 'All I Want for Christmas Is You', a: 'Mariah Carey', m: ['신남', '설렘', '행복'], w: ['눈'] }
+  const SITUATIONS = [
+    ['드라이브', '🚗'], ['공부·집중', '📚'], ['운동', '💪'],
+    ['밤 산책', '🌙'], ['카페', '☕'], ['잠들기 전', '🛏️']
   ];
 
-  let mood = null, weather = null;
+  // t: 제목, a: 아티스트, m: 어울리는 기분, w: 어울리는 날씨, c: 어울리는 상황(선택)
+  const SONGS = [
+    // --- 기존 곡 (상황 태그 보강) ---
+    { t: '좋은 날', a: '아이유', m: ['행복', '신남'], w: ['맑음'], c: ['드라이브', '카페'] },
+    { t: '벚꽃 엔딩', a: '버스커 버스커', m: ['설렘', '행복'], w: ['맑음'], c: ['드라이브', '밤 산책'] },
+    { t: '봄봄봄', a: '로이킴', m: ['설렘', '행복'], w: ['맑음'], c: ['드라이브', '카페'] },
+    { t: 'Dynamite', a: 'BTS', m: ['신남', '행복'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: 'Happy', a: 'Pharrell Williams', m: ['행복', '신남'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: 'Here Comes the Sun', a: 'The Beatles', m: ['행복', '평온'], w: ['맑음'], c: ['카페', '드라이브'] },
+    { t: "I'm Yours", a: 'Jason Mraz', m: ['행복', '평온'], w: ['맑음'], c: ['카페', '드라이브'] },
+    { t: 'What a Wonderful World', a: 'Louis Armstrong', m: ['평온', '행복'], w: ['맑음'], c: ['카페', '잠들기 전'] },
+    { t: '여행', a: '볼빨간사춘기', m: ['행복', '평온'], w: ['맑음'], c: ['드라이브', '카페'] },
+    { t: 'Hype Boy', a: 'NewJeans', m: ['설렘', '신남'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: '사랑은 은하수 다방에서', a: '10cm', m: ['설렘'], w: ['맑음', '흐림'], c: ['카페', '밤 산책'] },
+    { t: 'EVERYTHING', a: '검정치마', m: ['설렘'], w: ['맑음', '흐림'], c: ['밤 산책', '카페'] },
+    { t: '두 사람', a: '성시경', m: ['설렘', '평온'], w: ['흐림'], c: ['밤 산책', '잠들기 전'] },
+    { t: 'Perfect', a: 'Ed Sheeran', m: ['설렘', '평온'], w: ['눈', '흐림'], c: ['밤 산책', '잠들기 전'] },
+    { t: 'Gee', a: '소녀시대', m: ['신남'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: '챔피언', a: '싸이', m: ['신남'], w: ['맑음'], c: ['운동'] },
+    { t: 'Uptown Funk', a: 'Mark Ronson ft. Bruno Mars', m: ['신남'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: "Don't Stop Me Now", a: 'Queen', m: ['신남'], w: ['맑음', '흐림'], c: ['운동', '드라이브'] },
+    { t: 'Shake It Off', a: 'Taylor Swift', m: ['신남', '행복'], w: ['맑음', '흐림'], c: ['운동', '드라이브'] },
+    { t: '밤편지', a: '아이유', m: ['평온', '설렘'], w: ['흐림'], c: ['잠들기 전', '밤 산책'] },
+    { t: '가을 아침', a: '아이유', m: ['평온'], w: ['흐림'], c: ['카페', '잠들기 전'] },
+    { t: '사계', a: '태연', m: ['평온', '설렘'], w: ['눈', '흐림'], c: ['밤 산책', '카페'] },
+    { t: 'Clair de Lune', a: 'Claude Debussy', m: ['평온'], w: ['흐림', '눈'], c: ['공부·집중', '잠들기 전'] },
+    { t: "Don't Know Why", a: 'Norah Jones', m: ['평온', '슬픔'], w: ['비', '흐림'], c: ['카페', '잠들기 전'] },
+    { t: '비처럼 음악처럼', a: '김현식', m: ['평온', '슬픔'], w: ['비'], c: ['밤 산책', '잠들기 전'] },
+    { t: '붉은 노을', a: '이문세', m: ['평온', '지침'], w: ['흐림', '맑음'], c: ['드라이브', '밤 산책'] },
+    { t: '오랜 날 오랜 밤', a: '악동뮤지션', m: ['슬픔', '평온'], w: ['흐림'], c: ['밤 산책', '잠들기 전'] },
+    { t: '비', a: '폴킴', m: ['슬픔'], w: ['비'], c: ['잠들기 전', '밤 산책'] },
+    { t: '우산', a: '에픽하이 (feat. 윤하)', m: ['슬픔'], w: ['비'], c: ['밤 산책'] },
+    { t: 'Someone Like You', a: 'Adele', m: ['슬픔'], w: ['비', '흐림'], c: ['잠들기 전'] },
+    { t: 'All I Want', a: 'Kodaline', m: ['슬픔'], w: ['비'], c: ['밤 산책', '잠들기 전'] },
+    { t: "when the party's over", a: 'Billie Eilish', m: ['슬픔', '지침'], w: ['흐림'], c: ['잠들기 전'] },
+    { t: '눈의 꽃', a: '박효신', m: ['슬픔', '설렘'], w: ['눈'], c: ['밤 산책', '잠들기 전'] },
+    { t: '봄날', a: '방탄소년단', m: ['슬픔'], w: ['눈'], c: ['밤 산책', '잠들기 전'] },
+    { t: '주저하는 연인들을 위해', a: '잔나비', m: ['설렘', '슬픔'], w: ['흐림'], c: ['밤 산책', '카페'] },
+    { t: 'Fix You', a: 'Coldplay', m: ['지침', '슬픔'], w: ['흐림', '비'], c: ['잠들기 전', '밤 산책'] },
+    { t: 'Lean on Me', a: 'Bill Withers', m: ['지침'], w: ['맑음', '흐림'], c: ['카페'] },
+    { t: '걱정 말아요 그대', a: '이적', m: ['지침'], w: ['흐림', '눈'], c: ['카페', '잠들기 전'] },
+    { t: 'Have You Ever Seen the Rain?', a: 'Creedence Clearwater Revival', m: ['지침'], w: ['비'], c: ['드라이브', '카페'] },
+    { t: "Don't Look Back in Anger", a: 'Oasis', m: ['지침'], w: ['흐림'], c: ['드라이브', '밤 산책'] },
+    { t: 'Let It Snow! Let It Snow! Let It Snow!', a: 'Dean Martin', m: ['행복', '설렘'], w: ['눈'], c: ['카페', '드라이브'] },
+    { t: 'All I Want for Christmas Is You', a: 'Mariah Carey', m: ['신남', '설렘', '행복'], w: ['눈'], c: ['드라이브', '카페'] },
+
+    // --- 신규 보강 곡 (상황 커버리지 + 빈 조합 + 비주류 포함) ---
+    // 공부·집중
+    { t: 'Experience', a: 'Ludovico Einaudi', m: ['평온', '지침'], w: ['흐림', '비'], c: ['공부·집중', '잠들기 전'] },
+    { t: 'River Flows in You', a: 'Yiruma', m: ['평온', '설렘'], w: ['흐림', '눈'], c: ['공부·집중', '잠들기 전'] },
+    { t: 'Gymnopédie No.1', a: 'Erik Satie', m: ['평온'], w: ['흐림', '비'], c: ['공부·집중', '카페'] },
+    { t: 'Weightless', a: 'Marconi Union', m: ['평온', '지침'], w: ['흐림'], c: ['공부·집중', '잠들기 전'] },
+    { t: 'Snowman', a: 'WYS', m: ['평온', '설렘'], w: ['눈', '흐림'], c: ['공부·집중', '카페'] },
+    { t: 'Comptine d\'un autre été', a: 'Yann Tiersen', m: ['평온', '슬픔'], w: ['비', '흐림'], c: ['공부·집중', '잠들기 전'] },
+    // 운동
+    { t: 'Stronger', a: 'Kanye West', m: ['신남'], w: ['맑음'], c: ['운동'] },
+    { t: 'Till I Collapse', a: 'Eminem', m: ['신남', '지침'], w: ['맑음', '흐림'], c: ['운동'] },
+    { t: 'Believer', a: 'Imagine Dragons', m: ['신남'], w: ['맑음', '흐림'], c: ['운동', '드라이브'] },
+    { t: 'POWER', a: 'G-DRAGON', m: ['신남'], w: ['맑음'], c: ['운동', '드라이브'] },
+    { t: 'Run', a: 'OneRepublic', m: ['신남', '행복'], w: ['맑음'], c: ['운동', '드라이브'] },
+    // 드라이브
+    { t: 'Drive', a: '검정치마', m: ['평온', '설렘'], w: ['맑음', '흐림'], c: ['드라이브', '밤 산책'] },
+    { t: '빙글빙글', a: '나미', m: ['신남', '행복'], w: ['맑음'], c: ['드라이브'] },
+    { t: 'Sunset Lover', a: 'Petit Biscuit', m: ['평온', '설렘'], w: ['맑음', '흐림'], c: ['드라이브', '밤 산책'] },
+    { t: 'Blinding Lights', a: 'The Weeknd', m: ['신남', '설렘'], w: ['맑음', '흐림'], c: ['드라이브', '밤 산책'] },
+    // 밤 산책
+    { t: 'Nightcall', a: 'Kavinsky', m: ['설렘', '평온'], w: ['흐림'], c: ['밤 산책', '드라이브'] },
+    { t: 'Snooze', a: 'SZA', m: ['평온', '슬픔'], w: ['흐림'], c: ['밤 산책', '잠들기 전'] },
+    { t: '밤하늘의 별을', a: '경서', m: ['슬픔', '설렘'], w: ['흐림', '맑음'], c: ['밤 산책'] },
+    { t: 'city of stars', a: 'Ryan Gosling·Emma Stone', m: ['설렘', '평온'], w: ['흐림'], c: ['밤 산책', '잠들기 전'] },
+    // 카페
+    { t: 'Put Your Records On', a: 'Corinne Bailey Rae', m: ['행복', '평온'], w: ['맑음'], c: ['카페', '드라이브'] },
+    { t: 'Banana Pancakes', a: 'Jack Johnson', m: ['평온', '행복'], w: ['맑음', '비'], c: ['카페', '잠들기 전'] },
+    { t: 'Valerie', a: 'Amy Winehouse', m: ['신남', '행복'], w: ['맑음', '흐림'], c: ['카페', '드라이브'] },
+    { t: '커피 한 잔', a: '펄시스터즈', m: ['평온', '슬픔'], w: ['흐림', '비'], c: ['카페'] },
+    // 잠들기 전
+    { t: 'Dream a Little Dream of Me', a: 'Ella Fitzgerald', m: ['평온', '설렘'], w: ['흐림', '눈'], c: ['잠들기 전', '카페'] },
+    { t: 'Night Owl', a: 'Galimatias', m: ['평온', '슬픔'], w: ['흐림'], c: ['잠들기 전', '밤 산책'] },
+    { t: '자장가', a: '아이유', m: ['평온'], w: ['흐림', '눈'], c: ['잠들기 전'] },
+    { t: 'Holocene', a: 'Bon Iver', m: ['평온', '슬픔'], w: ['눈', '흐림'], c: ['잠들기 전', '밤 산책'] },
+    // 눈/비 날씨 보강
+    { t: '첫눈처럼 너에게 가겠다', a: '에일리', m: ['설렘', '슬픔'], w: ['눈'], c: ['밤 산책', '잠들기 전'] },
+    { t: 'Rain', a: '이적', m: ['평온', '슬픔'], w: ['비'], c: ['카페', '잠들기 전'] },
+    { t: 'December', a: '자이언티', m: ['설렘', '평온'], w: ['눈', '흐림'], c: ['카페', '드라이브'] },
+    { t: '빗속에서', a: '장범준', m: ['슬픔', '평온'], w: ['비'], c: ['밤 산책', '카페'] }
+  ];
+
+  let mood = null, weather = null, situation = null;
   const $ = id => document.getElementById(id);
 
   function makeChips(boxId, items, onPick) {
@@ -204,14 +254,18 @@
 
   function setMood(n) { mood = (mood === n) ? null : n; mark('moods', mood); }
   function setWeather(n) { weather = (weather === n) ? null : n; mark('weathers', weather); }
+  function setSituation(n) { situation = (situation === n) ? null : n; mark('situations', situation); }
 
   makeChips('moods', MOODS, setMood);
   makeChips('weathers', WEATHERS, setWeather);
+  makeChips('situations', SITUATIONS, setSituation);
 
   function pick() {
     const scored = SONGS.map(s => ({
       s,
-      sc: (mood && s.m.includes(mood) ? 1 : 0) + (weather && s.w.includes(weather) ? 1 : 0),
+      sc: (mood && s.m.includes(mood) ? 1 : 0)
+        + (weather && s.w.includes(weather) ? 1 : 0)
+        + (situation && s.c && s.c.includes(situation) ? 1 : 0),
       r: Math.random()
     }));
     scored.sort((x, y) => (y.sc - x.sc) || (x.r - y.r));
@@ -221,17 +275,19 @@
   function render() {
     const box = $('result');
     box.textContent = '';
-    if (!mood && !weather) {
+    if (!mood && !weather && !situation) {
       const p = document.createElement('p');
       p.className = 'empty';
-      p.textContent = '기분이나 날씨를 하나 이상 골라 주세요.';
+      p.textContent = '기분·날씨·상황 중 하나 이상 골라 주세요.';
       box.appendChild(p);
       return;
     }
     const list = pick();
     const h = document.createElement('h2');
-    h.textContent = [mood, weather].filter(Boolean).join(' · ') + '에 어울리는 노래';
+    h.textContent = [mood, weather, situation].filter(Boolean).join(' · ') + '에 어울리는 노래';
     box.appendChild(h);
+
+    const pickedCount = [mood, weather, situation].filter(Boolean).length;
 
     list.forEach(({ s, sc }) => {
       const row = document.createElement('div');
@@ -241,10 +297,22 @@
       const t = document.createElement('div'); t.className = 't'; t.textContent = s.t;
       const a = document.createElement('div'); a.className = 'a'; a.textContent = s.a;
       info.append(t, a);
-      if (mood && weather) {
+      if (pickedCount >= 2) {
         const m = document.createElement('span');
         m.className = 'm';
-        m.textContent = sc === 2 ? '기분 + 날씨 딱 맞아요' : (s.m.includes(mood) ? '기분에 어울려요' : '날씨에 어울려요');
+        if (sc >= pickedCount) {
+          const labels = [];
+          if (mood) labels.push('기분');
+          if (weather) labels.push('날씨');
+          if (situation) labels.push('상황');
+          m.textContent = labels.join(' + ') + ' 딱 맞아요';
+        } else {
+          const hit = [];
+          if (mood && s.m.includes(mood)) hit.push('기분');
+          if (weather && s.w.includes(weather)) hit.push('날씨');
+          if (situation && s.c && s.c.includes(situation)) hit.push('상황');
+          m.textContent = hit.join('·') + '에 어울려요';
+        }
         info.appendChild(m);
       }
 
