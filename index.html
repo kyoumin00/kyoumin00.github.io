@@ -116,11 +116,11 @@
   <div id="result"></div>
 
   <div class="panel" style="margin-top:24px">
-    <h2>다음엔 어떤 테마 노래를 더 추천받고 싶어요?</h2>
-    <p class="vote-note">마음에 드는 테마 하나를 골라 한 표 남겨 주세요. 다른 사람들의 선택도 함께 보여요.</p>
+    <h2>다음엔 어떤 장르를 추천받고 싶어요?</h2>
+    <p class="vote-note">마음에 드는 장르 하나를 골라 한 표 남겨 주세요. 다른 사람들의 선택도 함께 보여요.</p>
     <div class="chips" id="themes"></div>
     <div class="row">
-      <button class="go" id="vote" type="button" style="margin-top:8px" disabled>이 테마에 한 표</button>
+      <button class="go" id="vote" type="button" style="margin-top:8px" disabled>이 장르에 한 표</button>
     </div>
     <div class="vote-msg" id="voteMsg"></div>
     <div class="board" id="board"></div>
@@ -379,10 +379,10 @@
 <!-- 다음 추천 테마 투표 (브라우저 → Vercel 서버 함수 → Supabase) -->
 <script>
 (() => {
-  // 저장 가능한 테마 (서버 함수의 화이트리스트와 반드시 일치)
+  // 저장 가능한 장르 (서버 함수의 화이트리스트와 반드시 일치)
   const THEMES = [
-    ['드라이브', '🚗'], ['공부·집중', '📚'], ['운동', '💪'],
-    ['밤 산책', '🌙'], ['카페', '☕'], ['잠들기 전', '🛌']
+    ['발라드', '🎤'], ['댄스', '🕺'], ['알앤비', '🎶'],
+    ['힙합', '🎧'], ['록', '🎸'], ['인디', '🌙']
   ];
 
   const $ = id => document.getElementById(id);
