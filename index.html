@@ -126,6 +126,18 @@
     <div class="board" id="board"></div>
   </div>
 
+  <div class="panel" style="margin-top:24px">
+    <h2>지금 기분 한 줄 남기기</h2>
+    <p class="vote-note">오늘의 기분이나 상태를 한 줄로 남겨 보세요. (이 글은 지금 보는 브라우저에만 저장돼요.)</p>
+    <div class="row">
+      <input id="moodInput" type="text" maxlength="100" placeholder="예: 비 오는 날 집중하고 싶어요"
+        style="flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line, #ddd);border-radius:10px;font-size:14px" />
+      <button class="go" id="moodSave" type="button" style="margin-top:0">남기기</button>
+    </div>
+    <div class="vote-msg" id="moodMsg"></div>
+    <div class="board" id="moodBoard"></div>
+  </div>
+
   <footer>노래 제목을 누르면 유튜브 검색 결과가 새 탭에서 열려요.</footer>
 </div>
 
@@ -511,6 +523,73 @@
   makeThemeChips();
   voteBtn.addEventListener('click', vote);
   loadBoard();
+})();
+</script>
+
+<!-- 기분 한 줄 남기기 (브라우저 localStorage에만 저장, 서버 전송 없음) -->
+<script>
+(() => {
+  const KEY = 'moodNotes';
+  const input = document.getElementById('moodInput');
+  const saveBtn = document.getElementById('moodSave');
+  const board = document.getElementById('moodBoard');
+  const msg = document.getElementById('moodMsg');
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+    catch { return []; }
+  }
+  function save(notes) {
+    localStorage.setItem(KEY, JSON.stringify(notes));
+  }
+
+  function render() {
+    const notes = load();
+    board.textContent = '';
+    if (notes.length === 0) {
+      const p = document.createElement('p');
+      p.className = 'vote-note';
+      p.textContent = '아직 남긴 기분이 없어요. 첫 줄을 남겨 보세요!';
+      board.appendChild(p);
+      return;
+    }
+    notes.forEach(n => {
+      const row = document.createElement('div');
+      row.className = 'song';
+      const info = document.createElement('div');
+      const t = document.createElement('div'); t.className = 't'; t.textContent = n.text;
+      const a = document.createElement('div'); a.className = 'a'; a.textContent = n.at;
+      info.append(t, a);
+      row.appendChild(info);
+      board.appendChild(row);
+    });
+  }
+
+  function add() {
+    const text = (input.value || '').trim();
+    if (text.length === 0) {
+      msg.textContent = '한 줄을 입력해 주세요.';
+      msg.className = 'vote-msg err';
+      return;
+    }
+    const notes = load();
+    const now = new Date();
+    const at = now.getFullYear() + '.' +
+      String(now.getMonth() + 1).padStart(2, '0') + '.' +
+      String(now.getDate()).padStart(2, '0') + ' ' +
+      String(now.getHours()).padStart(2, '0') + ':' +
+      String(now.getMinutes()).padStart(2, '0');
+    notes.unshift({ text, at });
+    save(notes);
+    input.value = '';
+    msg.textContent = '남겼어요!';
+    msg.className = 'vote-msg ok';
+    render();
+  }
+
+  saveBtn.addEventListener('click', add);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+  render();
 })();
 </script>
 </body>
