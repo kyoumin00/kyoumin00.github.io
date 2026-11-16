@@ -231,6 +231,8 @@
   ];
 
   let mood = null, weather = null, situation = null;
+  // 직전에 추천으로 보여준 곡 제목들 (같은 조건으로 "다시 추천" 눌렀을 때 반복 줄이기용)
+  let lastShown = [];
   const $ = id => document.getElementById(id);
 
   function makeChips(boxId, items, onPick) {
@@ -261,15 +263,22 @@
   makeChips('situations', SITUATIONS, setSituation);
 
   function pick() {
+    const prev = new Set(lastShown);
     const scored = SONGS.map(s => ({
       s,
       sc: (mood && s.m.includes(mood) ? 1 : 0)
         + (weather && s.w.includes(weather) ? 1 : 0)
         + (situation && s.c && s.c.includes(situation) ? 1 : 0),
+      // 직전에 보여준 곡이면 뒤로 밀기 위한 플래그 (0: 새 곡, 1: 직전 곡)
+      seen: prev.has(s.t) ? 1 : 0,
       r: Math.random()
     }));
-    scored.sort((x, y) => (y.sc - x.sc) || (x.r - y.r));
-    return scored.filter(x => x.sc > 0).slice(0, 5);
+    // 점수 높은 순 → 같으면 직전에 안 나온 곡 먼저 → 그 안에서 랜덤
+    scored.sort((x, y) => (y.sc - x.sc) || (x.seen - y.seen) || (x.r - y.r));
+    const result = scored.filter(x => x.sc > 0).slice(0, 5);
+    // 이번에 보여준 곡을 기억해 다음 "다시 추천" 때 반복을 줄인다.
+    lastShown = result.map(x => x.s.t);
+    return result;
   }
 
   function render() {
